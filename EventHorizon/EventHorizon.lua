@@ -1550,7 +1550,7 @@ local SpellFrame_UNIT_AURA_refreshable = function (self, unitid)
 end
 
 local SpellFrame_UpdateDoT = function (self, addnew, source, now, start, expirationTime, duration, name, refresh, guid)
-  print(string.format("SpellFrame_UpdateDoT called, arguments: addnew=%s, source=%s, now=%s, start=%s, expirationTime=%s, duration=%s, name=%s, refresh=%s, guid=%s", addnew and "true" or "false" , source or "none", now, start or "nil", expirationTime or "nil", duration or "nil", name or "none", refresh  and "true" or "false", guid or "none"))
+  -- print(string.format("SpellFrame_UpdateDoT called, arguments: addnew=%s, source=%s, now=%s, start=%s, expirationTime=%s, duration=%s, name=%s, refresh=%s, guid=%s", addnew and "true" or "false" , source or "none", now, start or "nil", expirationTime or "nil", duration or "nil", name or "none", refresh  and "true" or "false", guid or "none"))
   local addticks
   local isHasted
   local checkDoT = self.auranamePrimary or name
