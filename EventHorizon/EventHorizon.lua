@@ -1011,7 +1011,7 @@ end
 
 local SpellFrame_OnUpdate = function (self,elapsed)
   local now = GetTime()
-  local diff = now+vars.past
+  local diff = now+vars.past  --DELETE diff matches timestamp of the earliest tracked position in time
 
   -- spellframe.nexttick is used to schedule the creation of predicted ticks as soon as they scroll past now+future.
   local nexttick = self.nexttick
@@ -1026,13 +1026,13 @@ local SpellFrame_OnUpdate = function (self,elapsed)
   end
   for k=#self.indicators,1,-1 do
     local indicator = self.indicators[k]
-    local time = indicator.time
+    local time = indicator.time --DELETE time = timestamp when the tick is scheduled to happen
     if time then
       -- Example:
       -- [-------|------->--------]
       -- past    now     time     future
       -- now=795, time=800, past=-3, then time is time-now-past after past.
-      local p = (time-diff)*vars.scale
+      local p = (time-diff)*vars.scale --DELETE p = time in seconds before tick goes past the earliest tracked position in time (will be negative if tick should have happened before that point)
       local remove = p<0 or (time<=now and indicator.typeid=='tick' and not indicator.happened)
       if remove then
         -- debug("OnUpdate - remove", indicator, indicator.time, indicator.start, indicator.stop)
@@ -1475,7 +1475,7 @@ local SpellFrame_UNIT_AURA_refreshable = function (self, unitid)
   local addnew, refresh
   local now = GetTime()
   local guid = UnitGUID(self.auraunit or 'target')
-  --print(name,source,self.spellname,self.auraname)
+  print(string.format("Name: %s, Duration: %.2f, Start: %.2f, End: %.2f, afflicted: %s", self.auraname, duration or 0, (duration and expirationTime) and (expirationTime-now-duration) or 0, expirationTime and (expirationTime-now) or 0, afflicted and "yes" or "no"))
   -- First find out if the debuff was refreshed.
 
   --[[ if self.aurasegment and expirationTime == 0 and duration == 0 then  -- Timeless aura, bar exists (Overkill)
@@ -1500,15 +1500,15 @@ local SpellFrame_UNIT_AURA_refreshable = function (self, unitid)
         start = self.targetdebuff.start
       else
         -- Check for refresh.
-        if start < self.targetdebuff.stop then
-          local totalduration = self.targetdebuff.stop - self.targetdebuff.start
-          local lasttick = self.targetdebuff.stop - math.fmod(totalduration, self.dotMod or self.dot)
-          local success = self.castsuccess[guid]
+        if start < self.targetdebuff.stop then  --DELETE self.targetdebuff.stop = estimated end time of debuff previously on target, if this new application started before that one ended, then...
+          local totalduration = self.targetdebuff.stop - self.targetdebuff.start --DELETE totalduration will contain duration of previous debuff on target
+          local lasttick = self.targetdebuff.stop - math.fmod(totalduration, self.dotMod or self.dot) --DELETE lasttick will match last non-partial tick. I believe this is not actually needed
+          local success = self.castsuccess[guid] --DELETE self.castsuccess[guid] contains timestamp of last CLEU fired, being guid the target guid
           local not_recast = true -- Poisons are never actually recast, so we default to true here, because success will always be nil.
           if success then
-            not_recast = math.abs(success-start)>0.5
+            not_recast = math.abs(success-start)>0.5 --DELETE if there's a difference greater than half second between the cast success event was fired and aura was applied, not_recast is set to true. Can someone explain better what it does?
           end
-          if not_recast and start < lasttick then
+          if not_recast and start < expirationTime then --DELETE let's not forget about the partial tick
             -- The current debuff was refreshed.
             start = self.targetdebuff.start
             refresh = true
@@ -1550,6 +1550,7 @@ local SpellFrame_UNIT_AURA_refreshable = function (self, unitid)
 end
 
 local SpellFrame_UpdateDoT = function (self, addnew, source, now, start, expirationTime, duration, name, refresh, guid)
+  print(string.format("SpellFrame_UpdateDoT called, arguments: addnew=%s, source=%s, now=%s, start=%s, expirationTime=%s, duration=%s, name=%s, refresh=%s, guid=%s", addnew and "true" or "false" , source or "none", now, start or "nil", expirationTime or "nil", duration or "nil", name or "none", refresh  and "true" or "false", guid or "none"))
   local addticks
   local isHasted
   local checkDoT = self.auranamePrimary or name
@@ -1563,7 +1564,7 @@ local SpellFrame_UpdateDoT = function (self, addnew, source, now, start, expirat
     if self.cast and self.useSmalldebuff then
       self.aurasegment = self:AddSegment(typeid, 'smalldebuff', start, expirationTime)
 
-      local hastedcasttime = select(7, GetSpellInfo(self.lastcast or self.spellname))/1000
+      local hastedcasttime = select(7, GetSpellInfo(self.lastcast or self.spellname))/1000 --DELETE isn't it the 4th argument instead of 7th? I'm confused
       self.cantcast = self:AddSegment(typeid, 'cantcast', start, expirationTime-hastedcasttime)
 
             --local pandemic_duration = duration*0.3
@@ -2416,7 +2417,7 @@ end
 
 -- Dispatch the CLEU.
 local mainframe_COMBAT_LOG_EVENT_UNFILTERED = function (...)
-  local self,time, event, hideCaster, srcguid,srcname,srcflags, destguid,destname,destflags, spellid,spellname = ...
+  local self, time, event, hideCaster, srcguid,srcname, srcflags, _, destguid, destname, destflags, _, spellid, spellname = ... --DELETE fixing this broke a lot of stuff . . . need to check all possible combinations 
   if srcguid~=vars.playerguid or event:sub(1,5)~='SPELL' then return end
   local spellframe = self.framebyspell[spellname]
   if ns.otherIDs[spellname] then
