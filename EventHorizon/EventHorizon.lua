@@ -1475,7 +1475,7 @@ local SpellFrame_UNIT_AURA_refreshable = function (self, unitid)
   local addnew, refresh
   local now = GetTime()
   local guid = UnitGUID(self.auraunit or 'target')
-  print(string.format("Name: %s, Duration: %.2f, Start: %.2f, End: %.2f, afflicted: %s", self.auraname, duration or 0, (duration and expirationTime) and (expirationTime-now-duration) or 0, expirationTime and (expirationTime-now) or 0, afflicted and "yes" or "no"))
+  --print(string.format("Name: %s, Duration: %.2f, Start: %.2f, End: %.2f, afflicted: %s", self.auraname, duration or 0, (duration and expirationTime) and (expirationTime-now-duration) or 0, expirationTime and (expirationTime-now) or 0, afflicted and "yes" or "no"))
   -- First find out if the debuff was refreshed.
 
   --[[ if self.aurasegment and expirationTime == 0 and duration == 0 then  -- Timeless aura, bar exists (Overkill)
