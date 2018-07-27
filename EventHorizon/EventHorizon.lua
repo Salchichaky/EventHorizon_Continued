@@ -1505,9 +1505,11 @@ local SpellFrame_UNIT_AURA_refreshable = function (self, unitid)
           local lasttick = self.targetdebuff.stop - math.fmod(totalduration, self.dotMod or self.dot) --DELETE lasttick will match last non-partial tick. I believe this is not actually needed
           local success = self.castsuccess[guid] --DELETE self.castsuccess[guid] contains timestamp of last CLEU fired, being guid the target guid
           local not_recast = true -- Poisons are never actually recast, so we default to true here, because success will always be nil.
+		      --[[
           if success then
-            not_recast = math.abs(success-start)>0.5 --DELETE if there's a difference greater than half second between the cast success event was fired and aura was applied, not_recast is set to true. Can someone explain better what it does?
+            not_recast = math.abs(success-start)>0.5 --DELETE if there's a difference greater than half second between the cast success event was fired and aura was applied, not_recast is set to true. Can someone explain better what it does? Commenting out for now.
           end
+		      --]]
           if not_recast and start < expirationTime then --DELETE let's not forget about the partial tick
             -- The current debuff was refreshed.
             start = self.targetdebuff.start
